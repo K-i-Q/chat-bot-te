@@ -19,7 +19,7 @@ export const Chat = () => {
                 Automação com IA para FAQ da Fotolux
             </CardDescription>
             <CardContent>
-                <ScrollArea className="h-[600px] w-full pr-4">
+                <ScrollArea className="h-[400px] w-full pr-4">
                     {messages.map((message) => {
                         return (
                             <div key={message.id} className="flex gap-3 text-slate-600 text-sm mb-4">
