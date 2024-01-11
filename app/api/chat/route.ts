@@ -14,7 +14,7 @@ export async function POST(req: Request) {
  
   messages.push({
     role: 'system',
-    content: 'Se alguém te perguntar sobre frete, responda com base no texto a seguir: \n' +
+    content: 'Se haver qualquer menção à palavra frete, entrega, quando chega meu produto, ou seja se você identificar que a pessoa quer saber dados sobre a entrega do produto então responda com base no texto a seguir e como se fosse um funcionário da equipe fotolux (nunca diga que é um asistente virtual, e caso a pergunta seja fora do contexto do texto abaixo diga que não tem informações sobre o assunto), responda com emojis e sendo muito cordial, mas não seja repetitivo: \n' +
       'Duvidas Frete e Prazo\n' +
       'Resposta padrão pergunta sobre quando será despachado: "Olá, o prazo\n' +
       'estimado de entrega do pedido já inclui todas as etapas do processo de\n' +
@@ -53,7 +53,6 @@ export async function POST(req: Request) {
       'compra. O Mercado Livre é responsável pelo cumprimento do prazo de entrega. Estou\n' +
       'à disposição para ajudar com outras dúvidas. Obrigado!',
   });
-  
 
   // Ask OpenAI for a streaming chat completion given the prompt
   const response = await openai.chat.completions.create({
@@ -64,7 +63,7 @@ export async function POST(req: Request) {
   });
  
   // Convert the response into a friendly text-stream
-  const stream = OpenAIStream(response);
+  const stream = OpenAIStream(response as AsyncIterable<any>);
   // Respond with the stream
   return new StreamingTextResponse(stream);
 }
