@@ -33,12 +33,22 @@ export const Chat = () => {
                                         <AvatarFallback>IA</AvatarFallback>
                                     </Avatar>
                                 )}
-                                <p className="leading-relaxed">
+                                {message.role === 'assistant' && (
+                                    <p className="leading-relaxed">
                                     <span className="block font-bold text-slate-700">
-                                        {message.role === 'user' ? "Cliente:" : "Fotolux"}
+                                        Fotolux
                                     </span>
                                     {message.content}
                                 </p>
+                                )}
+                               {message.role === 'user' && (
+                                    <p className="leading-relaxed">
+                                    <span className="block font-bold text-slate-700">
+                                        Cliente
+                                    </span>
+                                    {message.content}
+                                </p>
+                                )}
                             </div>
                         )
                     })

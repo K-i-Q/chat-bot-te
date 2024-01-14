@@ -1,4 +1,4 @@
-import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
  
 // Create an OpenAI API client (that's edge friendly!)
@@ -11,59 +11,31 @@ export const runtime = 'edge';
  
 export async function POST(req: Request) {
   const { messages } = await req.json();
- 
-  messages.push({
-    role: 'system',
-    content: 'Se haver qualquer menção à palavra frete, entrega, quando chega meu produto, ou seja se você identificar que a pessoa quer saber dados sobre a entrega do produto então responda com base no texto a seguir e como se fosse um funcionário da equipe fotolux (nunca diga que é um asistente virtual, e caso a pergunta seja fora do contexto do texto abaixo diga que não tem informações sobre o assunto), responda com emojis e sendo muito cordial, mas não seja repetitivo: \n' +
-      'Duvidas Frete e Prazo\n' +
-      'Resposta padrão pergunta sobre quando será despachado: "Olá, o prazo\n' +
-      'estimado de entrega do pedido já inclui todas as etapas do processo de\n' +
-      'logística. Atenciosamente."\n' +
-      'Olá (nome do cliente), Agradecemos pela sua compra! Quanto à logística,\n' +
-      'informamos que a responsabilidade é do Mercado Livre. O prazo estimado de\n' +
-      'entrega do seu pedido já considera todas as etapas do processo logístico.\n' +
-      'Estamos à disposição para mais esclarecimentos.\n' +
-      'Atenciosamente,Equipe Fotolux\n' +
-      'Olá! Trabalhamos exclusivamente online, sem ponto de retirada. A gestão\n' +
-      'do estoque e entrega é terceirizada pelo Mercado Livre. A maior parte está em\n' +
-      'SC, e o restante é distribuído nos depósitos deles em vários estados do Brasil.\n' +
-      'Prazo e condições de entrega podem ser consultados na página do produto\n' +
-      'ou no carrinho de compras. Estamos à disposição para ajudar!\n' +
-      'Equipe Fotolux\n' +
-      'Olá! 😊 Queremos compartilhar que nossa operação é exclusivamente online, e\n' +
-      'infelizmente, não oferecemos entrega por motoboy, pois todo o processo é gerenciado\n' +
-      'pelo Mercado Livre. A maior parte do nosso estoque está em SC, com o restante nos\n' +
-      'depósitos deles espalhados pelo Brasil. 🚚 Para conferir prazos e condições de entrega,\n' +
-      'sugerimos dar uma olhada na página do produto ou no carrinho de compras. Estamos\n' +
-      'à disposição para qualquer outra dúvida ou ajuda que precisar! 🌟 Equipe Fotolux\n' +
-      'Que ótimo saber que está tudo bem! Para verificar prazos e valores de entrega, siga os\n' +
-      'passos abaixo:\n' +
-      '1-Adicione o produto desejado ao carrinho no nosso site.\n' +
-      '2-Digite o CEP de destino no campo indicado.\n' +
-      '3-O site fornecerá informações sobre a taxa de entrega e a estimativa do prazo de\n' +
-      'entrega.\n' +
-      'É um processo simples e rápido. Se precisar de mais alguma ajuda ou tiver outras\n' +
-      'dúvidas, estou à disposição! 🚚📦😊\n' +
-      'Olá! Sim, fazemos envios para todo o Brasil. Fique à vontade para fazer a sua\n' +
-      'compra. Estamos à disposição para qualquer outra dúvida. Atenciosamente.\n' +
-      'Olá! O prazo de entrega é determinado pelo Mercado Livre e pode variar de acordo\n' +
-      'com a sua localidade e a disponibilidade do serviço de entrega. Infelizmente, não tenho\n' +
-      'acesso a essa informação específica. Recomendo que você verifique a disponibilidade\n' +
-      'do serviço de entrega full e o prazo estimado de entrega durante o processo de\n' +
-      'compra. O Mercado Livre é responsável pelo cumprimento do prazo de entrega. Estou\n' +
-      'à disposição para ajudar com outras dúvidas. Obrigado!',
-  });
+  const res = await sendMessageToAssistant(messages)
+  return NextResponse.json(res)
 
-  // Ask OpenAI for a streaming chat completion given the prompt
-  const response = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    stream: true,
-    messages,
+}
 
-  });
- 
-  // Convert the response into a friendly text-stream
-  const stream = OpenAIStream(response as AsyncIterable<any>);
-  // Respond with the stream
-  return new StreamingTextResponse(stream);
+async function sendMessageToAssistant(message:string) : Promise<string>{
+  try {
+    const response = await fetch('https://caring-foregoing-surgeon.glitch.me/api/assistants', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error('Erro ao enviar mensagem para o assistente:', error);
+    throw error;
+  }
 }
